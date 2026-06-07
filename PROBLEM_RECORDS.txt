@@ -1,0 +1,235 @@
+=======================================================
+                问题记录与修改方法
+=======================================================
+
+创建日期: 2026-05-28
+项目: MyApplication (Android广告信息流应用)
+
+-------------------------------------------------------
+问题1: 搜索框无法输入中文
+-------------------------------------------------------
+问题描述:
+  - MainActivity 和 SearchDialog 中的 EditText 无法输入中文
+  - 中文输入法切换后无法显示或输入中文字符
+
+根本原因:
+  - inputType 设置不当（如 textMultiLine、actionSearch 等）
+  - 某些输入法与特定的 inputType 配置存在兼容性问题
+
+修改方法:
+1. 在 XML 布局文件中:
+   - 移除 android:inputType="textMultiLine"
+   - 设置 android:inputType="text" 或 "text|textCapSentences"
+   - 添加 android:importantForAutofill="no" 防止自动填充干扰
+   - 设置 android:imeOptions="normal" 避免输入法特殊模式
+
+2. 在 Java 代码中:
+   - 使用 etSearch.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL)
+   - 确保没有设置限制字符的 digits 属性
+
+修改文件:
+  - app/src/main/res/layout/activity_main.xml
+  - app/src/main/res/layout/dialog_search.xml
+  - app/src/main/java/com/bytedance/myapplication/MainActivity.java
+  - app/src/main/java/com/bytedance/myapplication/SearchDialog.java
+
+-------------------------------------------------------
+问题2: 广告卡片布局排版调整
+-------------------------------------------------------
+问题描述:
+  - 大图模式需要图片在顶部，标题和摘要在下方
+  - 小图模式需要左图右文布局
+
+修改方法:
+1. 大图模式:
+   - 将媒体容器放在标题区域上方
+   - 设置图片高度为 180dp，宽度全屏
+   - 在图片左下角添加"大图"标签
+
+2. 小图模式:
+   - 创建水平布局: 左侧图片(120x120dp) + 右侧文字
+   - 右侧包含标题和摘要
+   - 在图片左下角添加"图文"标签
+   - 使用 LinearLayout 替代 FrameLayout 管理小图布局
+
+修改文件:
+  - app/src/main/res/layout/ad_card_item.xml
+  - app/src/main/java/com/bytedance/myapplication/AdAdapter.java
+出现问题: AdAdapter 编译错误 - 找不到 getSummary() 方法
+-------------------------------------------------------
+问题描述:
+  - 编译错误: "找不到符号 method getSummary()"
+  - 位置: AdAdapter.java:158
+
+根本原因:
+  - Ad 类中没有 getSummary() 方法，只有 getAiSummary() 方法
+  - 代码中错误地调用了不存在的方法
+
+修改方法:
+1. 将 ad.getSummary() 替换为 ad.getAiSummary()
+
+修改文件:
+  - app/src/main/java/com/bytedance/myapplication/AdAdapter.java
+
+代码变更:
+  // 修改前
+  holder.tvSummarySmall.setText(ad.getSummary());
+  
+  // 修改后
+  holder.tvSummarySmall.setText(ad.getAiSummary());
+
+注意事项:
+  - 在调用对象方法前，应先确认该方法是否存在
+  - 建议使用 IDE 的自动补全功能避免此类错误
+  - 如果需要添加新方法，应在 Ad 类中定义
+
+-------------------------------------------------------
+问题3: 播放器资源复用
+-------------------------------------------------------
+问题描述:
+  - 视频播放时频繁创建和销毁 MediaPlayer 导致性能问题
+  - 内存占用过高
+
+解决方案:
+1. 创建 PlayerPool 播放器对象池:
+   - 最大池大小: 3个播放器
+   - acquirePlayer(): 从池中获取或创建新播放器
+   - releasePlayer(): 将播放器放回池中或释放
+   - releaseAllPlayers(): 释放所有播放器资源
+
+2. 在 AdAdapter 中:
+   - 监听 RecyclerView 滚动事件，自动释放离开屏幕的播放器
+   - 切换视频时释放上一个播放器
+
+修改文件:
+  - app/src/main/java/com/bytedance/myapplication/PlayerPool.java
+  - app/src/main/java/com/bytedance/myapplication/AdAdapter.java
+
+-------------------------------------------------------
+问题4: 图片和视频不显示
+-------------------------------------------------------
+问题描述:
+  - 应用无法加载网络图片和视频
+  - 显示占位符或空白
+
+根本原因:
+  - Android 9.0+ 默认禁止 HTTP 明文传输
+  - 图片 URL 无效或服务器不可访问
+
+修改方法:
+1. 添加网络安全配置:
+   - 创建 res/xml/network_security_config.xml
+   - 配置允许明文流量和白名单域名
+
+2. 更新 AndroidManifest.xml:
+   - 添加 android:networkSecurityConfig="@xml/network_security_config"
+
+3. 使用可靠的图片 URL:
+   - 替换无效的图片链接为可用的测试图片服务
+
+修改文件:
+  - app/src/main/res/xml/network_security_config.xml
+  - app/src/main/AndroidManifest.xml
+  - app/src/main/java/com/bytedance/myapplication/MockData.java
+
+-------------------------------------------------------
+问题5: 页面切换动画和交互效果
+-------------------------------------------------------
+问题描述:
+  - 页面切换时没有过渡动画
+  - 点赞操作没有视觉反馈
+
+解决方案:
+1. 页面切换动画:
+   - 创建 slide_in_right / slide_out_left 动画
+   - 创建 slide_in_left / slide_out_right 动画
+   - 在 startActivityForResult 和 onActivityResult 中调用 overridePendingTransition
+
+2. 点赞彩蛋效果:
+   - 添加心形图片飞散动画
+   - 使用 ObjectAnimator 实现缩放和透明度变化
+
+修改文件:
+  - app/src/main/res/anim/slide_in_right.xml
+  - app/src/main/res/anim/slide_out_left.xml
+  - app/src/main/res/anim/slide_in_left.xml
+  - app/src/main/res/anim/slide_out_right.xml
+  - app/src/main/java/com/bytedance/myapplication/MainActivity.java
+  - app/src/main/java/com/bytedance/myapplication/AdDetailActivity.java
+
+-------------------------------------------------------
+问题6: 下拉刷新和上拉加载更多
+-------------------------------------------------------
+问题描述:
+  - 刷新和加载更多时显示重复的广告
+  - 没有显示新的广告内容
+
+解决方案:
+1. 实现分页机制:
+   - 使用 MockData.refreshAds() 生成随机排序的新数据
+   - 使用 MockData.loadMoreAds() 加载下一页数据
+   - 确保每页数据不重复
+
+2. 更新 RecyclerView:
+   - 使用 notifyItemRangeInserted() 替代 notifyDataSetChanged()
+   - 添加加载状态提示
+
+修改文件:
+  - app/src/main/java/com/bytedance/myapplication/MockData.java
+  - app/src/main/java/com/bytedance/myapplication/MainActivity.java
+
+-------------------------------------------------------
+
+-------------------------------------------------------
+问题8: PlayerPool 编译错误 - MediaPlayer.getVolume() 不存在
+-------------------------------------------------------
+问题描述:
+  - 编译错误: "找不到符号 method getVolume()"
+  - 位置: PlayerPool.java:118
+
+根本原因:
+  - MediaPlayer.getVolume() 方法是在 Android API 21 (Android 5.0) 中引入的
+  - 项目的 minSdkVersion 可能低于 API 21，导致该方法不可用
+
+修改方法:
+1. 使用 ConcurrentHashMap 存储每个播放器的音量状态
+2. 在 setMute() 和 setVolume() 方法中更新音量映射
+3. 在 isMuted() 和 getVolume() 方法中从映射中读取音量值
+
+修改文件:
+  - app/src/main/java/com/bytedance/myapplication/PlayerPool.java
+
+代码变更:
+  // 添加成员变量
+  private ConcurrentHashMap<MediaPlayer, Float> playerVolumes;
+
+  // 在构造函数中初始化
+  this.playerVolumes = new ConcurrentHashMap<>();
+
+  // 修改 setMute 方法
+  public void setMute(MediaPlayer player, boolean mute) {
+      if (player != null) {
+          float volume = mute ? 0f : 1f;
+          player.setVolume(volume, volume);
+          playerVolumes.put(player, volume);
+      }
+  }
+
+  // 修改 isMuted 方法
+  public boolean isMuted(MediaPlayer player) {
+      return player != null && playerVolumes.getOrDefault(player, 0f) == 0f;
+  }
+
+  // 修改 getVolume 方法
+  public float getVolume(MediaPlayer player) {
+      return player != null ? playerVolumes.getOrDefault(player, 1f) : 0f;
+  }
+
+注意事项:
+  - 在使用 Android API 时，应注意方法的最小 API 版本要求
+  - 可以在 Android Studio 中查看方法的 API 版本提示
+  - 使用兼容方式或条件判断处理不同 API 版本
+
+=======================================================
+记录结束
+=======================================================

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background">#FFFAFAFA</color>
+    <color name="card_bg">#FFFFFFFF</color>
+    <color name="primary_text">#FF1A1A1A</color>
+    <color name="secondary_text">#FF666666</color>
+    <color name="hint_text">#FF999999</color>
+    <color name="accent">#FF5B7FFF</color>
+    <color name="accent_bg">#FFE8EDFF</color>
+    <color name="tag_bg">#FFF0F0F0</color>
+    <color name="tag_text">#FF888888</color>
+    <color name="search_bg">#FFF0F0F0</color>
+    <color name="bot_message_bg">#FFF5F5F5</color>
+    <color name="ad_label">#FFFF6B6B</color>
+    <color name="ad_label_bg">#FFFFE8E8</color>
+    <color name="tab_selected">#FF5B7FFF</color>
+    <color name="tab_unselected">#FFE8EDFF</color>
+    <color name="demo_bg">#FFF0F5FF</color>
+    <color name="statistics_bg">#FFF8F8F8</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="light_blue">#FFE8F4FD</color>
+    <color name="placeholder_bg">#FFE8E8E8</color>
+    <color name="error_bg">#FFFFE8E8</color>
+    <color name="video_duration_bg">#CC000000</color>
+    <color name="like_color">#FFFF6B6B</color>
+    <color name="favorite_color">#FFFFB800</color>
+    <color name="share_color">#FF4CAF50</color>
+    <color name="statistic_item_bg">#FFFFFFFF</color>
+    <color name="event_type_bg">#FFF0F0F0</color>
+</resources>
